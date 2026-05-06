@@ -1,0 +1,52 @@
+diff --git a/dist/vue-router.cjs b/dist/vue-router.cjs
+index 74f2c58a849fe5588d09742b15482ed798dfeeda..5122774862e6fb2b8e31203408bc7abc44b1449d 100644
+--- a/dist/vue-router.cjs
++++ b/dist/vue-router.cjs
+@@ -1979,7 +1979,7 @@ const RouterViewImpl = /* @__PURE__ */ (0, vue.defineComponent)({
+ 					path: matchedRoute.path,
+ 					meta: matchedRoute.meta
+ 				};
+-				(isArray(component.ref) ? component.ref.map((r) => r.i) : [component.ref.i]).forEach((instance) => {
++				(isArray(component.ref) ? component.ref.map((r) => r && r.i) : [component.ref.i]).filter((instance) => instance != null).forEach((instance) => {
+ 					instance.__vrv_devtools = info;
+ 				});
+ 			}
+diff --git a/dist/vue-router.esm-browser.js b/dist/vue-router.esm-browser.js
+index 728fb39eb4a0fae060b15f38000af17a206d843a..42db1dc85ba6560c066315526a74d0734c065838 100644
+--- a/dist/vue-router.esm-browser.js
++++ b/dist/vue-router.esm-browser.js
+@@ -1976,7 +1976,7 @@ const RouterViewImpl = /* @__PURE__ */ defineComponent({
+ 					path: matchedRoute.path,
+ 					meta: matchedRoute.meta
+ 				};
+-				(isArray(component.ref) ? component.ref.map((r) => r.i) : [component.ref.i]).forEach((instance) => {
++				(isArray(component.ref) ? component.ref.map((r) => r && r.i) : [component.ref.i]).filter((instance) => instance != null).forEach((instance) => {
+ 					instance.__vrv_devtools = info;
+ 				});
+ 			}
+diff --git a/dist/vue-router.global.js b/dist/vue-router.global.js
+index eacf626a706bb5eaff4aa838c934df22b64b8aa0..5a7f808387338c3068e78f4494c660927423f045 100644
+--- a/dist/vue-router.global.js
++++ b/dist/vue-router.global.js
+@@ -1976,7 +1976,7 @@ var VueRouter = (function(exports, vue) {
+ 						path: matchedRoute.path,
+ 						meta: matchedRoute.meta
+ 					};
+-					(isArray(component.ref) ? component.ref.map((r) => r.i) : [component.ref.i]).forEach((instance) => {
++					(isArray(component.ref) ? component.ref.map((r) => r && r.i) : [component.ref.i]).filter((instance) => instance != null).forEach((instance) => {
+ 						instance.__vrv_devtools = info;
+ 					});
+ 				}
+diff --git a/dist/vue-router.js b/dist/vue-router.js
+index ab985fd1089f942523f5094a5c2ea077e6f37dea..381ab1d20583f495d796b38ce40ecb931d308c2c 100644
+--- a/dist/vue-router.js
++++ b/dist/vue-router.js
+@@ -1115,7 +1115,7 @@ const RouterViewImpl = /* @__PURE__ */ defineComponent({
+ 					path: matchedRoute.path,
+ 					meta: matchedRoute.meta
+ 				};
+-				(isArray(component.ref) ? component.ref.map((r) => r.i) : [component.ref.i]).forEach((instance) => {
++				(isArray(component.ref) ? component.ref.map((r) => r && r.i) : [component.ref.i]).filter((instance) => instance != null).forEach((instance) => {
+ 					instance.__vrv_devtools = info;
+ 				});
+ 			}

@@ -1,0 +1,39 @@
+diff --git a/dist/runtime-core.cjs.js b/dist/runtime-core.cjs.js
+index c4d1e7c59fc73979f50798c37d882a0b6b3e960d..2ef90b5e14bf2b953a87cbf6c8580f766e1734f0 100644
+--- a/dist/runtime-core.cjs.js
++++ b/dist/runtime-core.cjs.js
+@@ -3227,7 +3227,7 @@ function createSlots(slots, dynamicSlots) {
+ }
+ 
+ function renderSlot(slots, name, props = {}, fallback, noSlotted) {
+-  if (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce) {
++  if (currentRenderingInstance && (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce)) {
+     const hasProps = Object.keys(props).length > 0;
+     if (name !== "default") props.name = name;
+     return openBlock(), createBlock(
+diff --git a/dist/runtime-core.cjs.prod.js b/dist/runtime-core.cjs.prod.js
+index 6beacc56ba58669e367521b72dc9a8a47358e8bb..33c89f8b015c820c1b6b787278d965b429be833c 100644
+--- a/dist/runtime-core.cjs.prod.js
++++ b/dist/runtime-core.cjs.prod.js
+@@ -2509,7 +2509,7 @@ function createSlots(slots, dynamicSlots) {
+ }
+ 
+ function renderSlot(slots, name, props = {}, fallback, noSlotted) {
+-  if (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce) {
++  if (currentRenderingInstance && (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce)) {
+     const hasProps = Object.keys(props).length > 0;
+     if (name !== "default") props.name = name;
+     return openBlock(), createBlock(
+diff --git a/dist/runtime-core.esm-bundler.js b/dist/runtime-core.esm-bundler.js
+index bd486cd69ddb9e00f8c990019befd7bde61a5739..411b8bdbdd4fcb76eb33222b46437d5a272dc678 100644
+--- a/dist/runtime-core.esm-bundler.js
++++ b/dist/runtime-core.esm-bundler.js
+@@ -3245,7 +3245,7 @@ function createSlots(slots, dynamicSlots) {
+ }
+ 
+ function renderSlot(slots, name, props = {}, fallback, noSlotted) {
+-  if (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce) {
++  if (currentRenderingInstance && (currentRenderingInstance.ce || currentRenderingInstance.parent && isAsyncWrapper(currentRenderingInstance.parent) && currentRenderingInstance.parent.ce)) {
+     const hasProps = Object.keys(props).length > 0;
+     if (name !== "default") props.name = name;
+     return openBlock(), createBlock(

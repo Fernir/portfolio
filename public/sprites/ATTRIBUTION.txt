@@ -1,0 +1,22 @@
+Sprites:
+
+- spritesheet-tiles-default.png — Kenney.nl (CC0), «Spritesheets Tiles» / Platformer tiles default, лист 1169×1169 (кадры 64×64, шаг ячейки 65 px, 18 колонок). Тайлы уровня и декора: `app/data/tileSprites.ts`.
+  https://kenney.nl/assets
+
+- spritesheet-portfolio-tiles.png — опционально: свой генератор `yarn gen:sprites` (`scripts/gen-portfolio-tiles.mjs`); в игре сейчас не используется.
+
+- spritesheet-characters-default.png — Kenney.nl (CC0), «Spritesheets Characters», лист 902×902, кадры 128×128.
+  https://kenney.nl/assets
+
+- spritesheet-enemies-default.png — Kenney.nl (CC0), «Spritesheets Enemies», лист 519×519, кадры 64×64 (шаг ячеек в атласе 65 px).
+  https://kenney.nl/assets
+
+Sprites (Phaser 3 Examples — github.com/phaserjs/examples, folder public/assets/sprites):
+
+- cc0-dude.png — герой, лист 288×48 (First Game tutorial). Ранее использовался в прототипе; текущий герой — Kenney выше.
+- pack-chick-walk.png — chick.png, полоса ходьбы 4×(16×18 px).
+- pack-spiked-ball.png — spikedball.png, один спрайт 96×96.
+- pack-ghost.png — ghost.png.
+- pack-ufo.png — ufo.png.
+
+Не связано с Nintendo / SMB. Учебные демо-ассеты.

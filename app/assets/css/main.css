@@ -1,0 +1,1105 @@
+/* Совпадение имени с CSS-свойством font-display ломало утилиту Tailwind font-display → используем font-heading в разметке */
+.font-heading {
+   font-family: 'Unbounded', system-ui, sans-serif;
+}
+
+:root {
+   --bg-deep: #060908;
+   --accent: #7dcf9a;
+   --accent-hot: #d4b878;
+   --text: #e8f0e8;
+   --text-muted: rgba(216, 228, 216, 0.62);
+   --glass-border: rgba(120, 180, 130, 0.22);
+   --radius-card: 14px;
+   --font-body: 'Instrument Sans', system-ui, sans-serif;
+   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+   /* Полярность: тёмный UI → светлый основной текст; противоположности задаём в html.light-forest */
+   --text-on-accent: #061008;
+   --ghost-hover-fg: #efffed;
+   --chrome-icon-border: rgba(255, 255, 255, 0.12);
+   --chrome-icon-bg: rgba(255, 255, 255, 0.045);
+   --chrome-icon-bg-hover: rgba(255, 255, 255, 0.09);
+}
+
+/* Светлый лес: противоположная полярность текста и хрома */
+html.light-forest {
+   /* Подложка страницы при скролле — без «белого поля», спокойный хвойный серый */
+   --bg-deep: #cddad4;
+   --text: #0f1e14;
+   --text-muted: rgba(26, 48, 34, 0.74);
+   --accent: #238754;
+   --accent-hot: #7a5c18;
+   --glass-border: rgba(34, 110, 72, 0.26);
+   --text-on-accent: #07160e;
+   --ghost-hover-fg: #0a2218;
+   --chrome-icon-border: rgba(28, 82, 54, 0.22);
+   --chrome-icon-bg: rgba(28, 82, 54, 0.065);
+   --chrome-icon-bg-hover: rgba(28, 82, 54, 0.11);
+}
+
+html.light-forest body {
+   background: var(--bg-deep);
+}
+
+html.light-forest .text-gradient {
+   background: linear-gradient(118deg, rgb(193 191 111) 0%, #ffffff 100%);
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+}
+
+/* Светлый лес: герой и секции над канвой — светлая типографика; карточки .surface-card задают тёмный текст внутри */
+html.light-forest .portfolio-hero {
+   --text: rgba(244, 250, 246, 0.96);
+   --text-muted: rgba(198, 218, 208, 0.88);
+   --accent: #8eecbb;
+   --accent-hot: #edd89f;
+   --text-on-accent: #030806;
+   --ghost-hover-fg: #f2faf6;
+   color: var(--text);
+}
+
+html.light-forest main > section:not(.portfolio-hero) {
+   --text: rgba(244, 250, 246, 0.96);
+   --text-muted: rgba(198, 218, 208, 0.88);
+   --accent: #8eecbb;
+   --accent-hot: #edd89f;
+   color: var(--text);
+}
+
+/* Светлый лес: блок контактов внизу — светлый текст поверх канвы (как раньше) */
+html.light-forest footer#contact {
+   --text: rgba(244, 250, 246, 0.96);
+   --text-muted: rgba(212, 232, 222, 0.92);
+   --accent: #8eecbb;
+   color: var(--text);
+}
+
+.footer-contact-sep {
+   opacity: 0.52;
+}
+
+html.light-forest footer#contact .footer-contact-sep {
+   opacity: 0.88;
+}
+
+html.light-forest .nav-link {
+   color: rgba(28, 52, 38, 0.72);
+}
+
+html.light-forest .nav-link:hover {
+   background: rgba(20, 70, 44, 0.08);
+   color: var(--text);
+}
+
+/**
+ * Иконка в шапке (Марио): рамка/заливка следуют полярности хрома.
+ */
+.nav-icon-chip {
+   border: 1px solid var(--chrome-icon-border);
+   background-color: var(--chrome-icon-bg);
+}
+
+.nav-icon-chip:hover {
+   background-color: var(--chrome-icon-bg-hover);
+}
+
+html.light-forest .hero-cta .btn-glass--ghost {
+   border-color: rgba(28, 92, 58, 0.42);
+   /* Светлое стекло ::before — не наследуем мятный акцент от героя */
+   color: #0e261a;
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.22),
+      0 0 26px -10px rgba(45, 140, 95, 0.35);
+}
+
+html.light-forest .hero-cta .btn-glass--ghost::before {
+   background: linear-gradient(
+      155deg,
+      rgba(240, 248, 242, 0.92) 0%,
+      rgba(210, 232, 218, 0.72) 48%,
+      rgba(232, 244, 236, 0.88) 100%
+   );
+}
+
+html.light-forest .hero-cta .btn-glass--ghost:hover {
+   border-color: rgba(22, 88, 54, 0.52);
+   color: #071a12;
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.35),
+      0 0 34px -8px rgba(55, 160, 105, 0.42);
+}
+
+html.light-forest .hero-cta .btn-glass--ghost:hover::before {
+   background: linear-gradient(
+      155deg,
+      rgba(250, 252, 250, 0.96) 0%,
+      rgba(220, 238, 226, 0.82) 52%,
+      rgba(236, 248, 240, 0.94) 100%
+   );
+}
+
+*,
+*::before,
+*::after {
+   box-sizing: border-box;
+}
+
+html {
+   scroll-behavior: smooth;
+   /* Safari iOS / некоторые WebKit — без произвольного масштаба текста на повороте */
+   -webkit-text-size-adjust: 100%;
+   text-size-adjust: 100%;
+   /* Меньше скачков при появлении вертикального скроллбара — sticky-шапка не «прыгает» по ширине */
+   scrollbar-gutter: stable;
+   /* Якоря (#about и т.д.) не уходят под липкую шапку (safe-area + высота nav) */
+   scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 4rem);
+   /* Нет «резинового» оверскролла сверху/снизу и передачи скролла родителю */
+   overscroll-behavior-y: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+   html {
+      scroll-behavior: auto;
+   }
+
+   *,
+   *::before,
+   *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+   }
+}
+
+/**
+ * Горизонтальные поля секций + safe-area на вырезах / индикаторе «домой».
+ */
+.page-gutter {
+   padding-inline-start: max(1rem, env(safe-area-inset-left, 0px));
+   padding-inline-end: max(1rem, env(safe-area-inset-right, 0px));
+}
+
+@media (min-width: 640px) {
+   .page-gutter {
+      padding-inline-start: max(1.25rem, env(safe-area-inset-left, 0px));
+      padding-inline-end: max(1.25rem, env(safe-area-inset-right, 0px));
+   }
+}
+
+body {
+   margin: 0;
+   min-height: 100vh;
+   min-height: 100dvh;
+   font-family: var(--font-body);
+   font-size: 1.05rem;
+   line-height: 1.6;
+   color: var(--text);
+   background: var(--bg-deep);
+   /* overflow-x: hidden заставляет overflow-y считаться не visible — ломает sticky у шапки в части браузеров */
+   overflow-x: clip;
+   overscroll-behavior-y: none;
+   -webkit-font-smoothing: antialiased;
+}
+
+@supports not (overflow: clip) {
+   body {
+      overflow-x: hidden;
+   }
+}
+
+/* Плавная смена темы (переменные на html): цвета, фоны, обводки */
+@media (prefers-reduced-motion: no-preference) {
+   body {
+      transition:
+         background-color 0.45s var(--ease-out-expo),
+         color 0.45s var(--ease-out-expo);
+   }
+
+   header,
+   footer,
+   main {
+      transition:
+         color 0.45s var(--ease-out-expo),
+         border-color 0.45s var(--ease-out-expo),
+         background-color 0.45s var(--ease-out-expo),
+         box-shadow 0.45s var(--ease-out-expo);
+   }
+
+   .surface-card {
+      transition:
+         color 0.45s var(--ease-out-expo),
+         border-color 0.45s var(--ease-out-expo),
+         box-shadow 0.45s var(--ease-out-expo);
+   }
+
+   .btn-glass {
+      transition:
+         color 0.4s var(--ease-out-expo),
+         border-color 0.4s var(--ease-out-expo),
+         box-shadow 0.4s var(--ease-out-expo),
+         background-color 0.4s var(--ease-out-expo),
+         opacity 0.25s ease,
+         transform 0.3s var(--ease-out-expo);
+   }
+
+   .nav-icon-chip {
+      transition:
+         border-color 0.4s var(--ease-out-expo),
+         background-color 0.4s var(--ease-out-expo),
+         transform 0.2s ease;
+   }
+
+   /* SVG в шапке и якоря с currentColor */
+   header svg[aria-hidden='true'] {
+      transition: color 0.4s var(--ease-out-expo);
+   }
+}
+
+@media (max-width: 639px) {
+   body {
+      font-size: 1rem;
+      line-height: 1.58;
+   }
+}
+
+::selection {
+   background: rgba(94, 180, 120, 0.42);
+   color: #fff;
+}
+
+/**
+ * Канва леса: strict containment + два статических слоя кроссфейда (без Vue :class на градиентах).
+ */
+.forest-canvas-host {
+   pointer-events: none;
+   position: fixed;
+   inset: 0;
+   z-index: -20;
+   min-height: 100vh;
+   overflow: hidden;
+   background-color: #050806;
+   contain: strict;
+}
+
+.forest-shade {
+   position: absolute;
+   inset: 0;
+   transition: opacity 0.5s ease;
+   pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .forest-shade {
+      transition: none;
+   }
+}
+
+.forest-shade--dark {
+   opacity: 1;
+   background-image:
+      linear-gradient(to bottom, rgba(5, 10, 8, 0.15), rgba(6, 14, 10, 0.11), rgba(2, 6, 4, 0.88)),
+      radial-gradient(ellipse 90% 55% at 65% 12%, rgba(255, 248, 235, 0.018), transparent 52%);
+}
+
+html.light-forest .forest-shade--dark {
+   opacity: 0;
+}
+
+.forest-shade--light {
+   opacity: 0;
+   background-image:
+      linear-gradient(to bottom, rgba(14, 32, 24, 0.42), rgba(8, 18, 14, 0.18), rgba(3, 8, 6, 0.72)),
+      radial-gradient(ellipse 88% 56% at 72% 12%, rgba(72, 110, 78, 0.22), transparent 58%);
+}
+
+html.light-forest .forest-shade--light {
+   opacity: 1;
+}
+
+/**
+ * Шапка: blur чуть слабее xl — меньше нагрузка на композитинг; фон в CSS, не в Tailwind [].
+ */
+.site-header {
+   position: sticky;
+   top: 0;
+   z-index: 40;
+   isolation: isolate;
+   overflow: visible;
+   border-bottom-width: 1px;
+   border-bottom-style: solid;
+   padding-top: env(safe-area-inset-top, 0px);
+   backdrop-filter: blur(16px) saturate(1.5);
+   -webkit-backdrop-filter: blur(16px) saturate(1.5);
+   transition:
+      background-color 450ms var(--ease-out-expo),
+      border-color 450ms var(--ease-out-expo),
+      box-shadow 450ms var(--ease-out-expo);
+   /* без paint — иначе contain обрезает выпадающее меню языка под шапкой */
+   contain: layout style;
+   transform: translateZ(0);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+   .site-header {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+   }
+}
+
+html:not(.light-forest) .site-header {
+   border-color: rgba(255, 255, 255, 0.07);
+   background-color: rgba(4, 8, 6, 0.94);
+   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+@supports ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+   html:not(.light-forest) .site-header {
+      background-color: rgba(4, 8, 6, 0.82);
+   }
+}
+
+html.light-forest .site-header {
+   border-color: rgba(24, 72, 48, 0.14);
+   background-color: rgba(248, 252, 250, 0.94);
+   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+@supports ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+   html.light-forest .site-header {
+      background-color: rgba(248, 252, 250, 0.84);
+   }
+}
+
+.site-footer {
+   border-top-width: 1px;
+   border-top-style: solid;
+   transition: border-color 450ms var(--ease-out-expo);
+}
+
+html:not(.light-forest) .site-footer {
+   border-color: rgba(255, 255, 255, 0.06);
+}
+
+html.light-forest .site-footer {
+   border-color: rgba(244, 248, 245, 0.22);
+}
+
+.site-footer__safe-pad {
+   padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 640px) {
+   .site-footer__safe-pad {
+      padding-bottom: max(2.5rem, env(safe-area-inset-bottom, 0px));
+   }
+}
+
+.ring-offset-bg-deep {
+   --tw-ring-offset-color: var(--bg-deep);
+}
+
+.nav-cta-link {
+   font-size: 0.8rem;
+}
+
+@media (min-width: 640px) {
+   .nav-cta-link {
+      font-size: 0.88rem;
+   }
+}
+
+.theme-toggle-btn {
+   color: var(--accent-hot);
+}
+
+.theme-toggle-btn--lit {
+   color: var(--accent);
+}
+
+.forest-theme-toggle-icon {
+   position: absolute;
+   inset: 0;
+   margin: auto;
+   width: 1.125rem;
+   height: 1.125rem;
+}
+
+.type-hero-eyebrow {
+   font-size: 0.78rem;
+   line-height: 1.4;
+   letter-spacing: 0.14em;
+   text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+   .type-hero-eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.16em;
+   }
+}
+
+.type-hero-title {
+   font-size: clamp(1.65rem, 5.5vw, 2.85rem);
+   line-height: 1.14;
+}
+
+@media (min-width: 640px) {
+   .type-hero-title {
+      line-height: 1.12;
+   }
+}
+
+.type-hero-lead {
+   font-size: 1rem;
+   line-height: 1.625;
+}
+
+@media (min-width: 640px) {
+   .type-hero-lead {
+      font-size: 1.1rem;
+   }
+}
+
+.hero-cta-btn {
+   min-height: 2.75rem;
+}
+
+@media (min-width: 640px) {
+   .hero-cta-btn {
+      min-height: 2.85rem;
+   }
+}
+
+.hero-cta-btn-text {
+   font-size: 0.92rem;
+}
+
+@media (min-width: 640px) {
+   .hero-cta-btn-text {
+      font-size: 0.95rem;
+   }
+}
+
+.type-section-kicker {
+   font-size: 0.8rem;
+   line-height: 1.4;
+   letter-spacing: 0.14em;
+   text-transform: uppercase;
+}
+
+.type-section-heading {
+   font-size: clamp(1.45rem, 2.65vw, 1.95rem);
+   line-height: 1.375;
+   letter-spacing: -0.025em;
+}
+
+.type-card-title {
+   font-size: 1.05rem;
+   letter-spacing: -0.025em;
+}
+
+.type-card-body {
+   font-size: 0.98rem;
+}
+
+.type-skills-group-title {
+   font-size: 0.8rem;
+   letter-spacing: 0.12em;
+}
+
+.type-skills-list {
+   font-size: 0.92rem;
+}
+
+.type-project-title {
+   font-size: 1.02rem;
+   letter-spacing: -0.025em;
+}
+
+.type-project-desc {
+   font-size: 0.92rem;
+}
+
+.project-stack-badge {
+   pointer-events: none;
+   position: absolute;
+   left: 0.875rem;
+   top: 0.875rem;
+   border-radius: 0.375rem;
+   background-color: rgba(0, 0, 0, 0.45);
+   padding: 0.25rem 0.5rem;
+   font-size: 0.72rem;
+   font-weight: 500;
+   color: #fff;
+   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+   backdrop-filter: blur(8px);
+   -webkit-backdrop-filter: blur(8px);
+}
+
+.type-footer-lead {
+   font-size: 0.88rem;
+   line-height: 1.375;
+}
+
+@media (min-width: 640px) {
+   .type-footer-lead {
+      font-size: 0.9rem;
+   }
+}
+
+.type-footer-nav {
+   font-size: 0.88rem;
+}
+
+@media (min-width: 640px) {
+   .type-footer-nav {
+      font-size: 0.9rem;
+   }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+   .surface-card.project-card {
+      transition:
+         transform 300ms var(--ease-out-expo),
+         box-shadow 300ms var(--ease-out-expo);
+   }
+
+   .surface-card.project-card:hover {
+      transform: translateY(-0.25rem);
+      box-shadow: 0 22px 48px -28px rgba(0, 0, 0, 0.55);
+   }
+}
+
+.surface-svg-filters {
+   position: absolute;
+   width: 0;
+   height: 0;
+   overflow: hidden;
+   clip: rect(0, 0, 0, 0);
+}
+
+/**
+ * Капля: сильное SVG-искажение на ::before + очень лёгкий blur (иначе снова «матовая» плёнка).
+ */
+.surface-card {
+   position: relative;
+   border-radius: var(--radius-card);
+   border: 1px solid rgba(255, 255, 255, 0.12);
+   /* Ярче основной текст и приглушённый — поверх стекла читается контрастнее */
+   --text: #f5fcf9;
+   --text-muted: rgba(232, 244, 236, 0.88);
+   background: linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.028) 0%,
+      rgba(255, 255, 255, 0.004) 55%,
+      rgba(200, 235, 215, 0.018) 100%
+   );
+   box-shadow: 0 18px 42px -26px rgba(0, 0, 0, 0.48);
+   overflow: hidden;
+   isolation: isolate;
+}
+
+/* Контраст и «сочность» как у hard-light, только у типографики и ссылок (не у превью-картинки) */
+.surface-card .glass-card__inner {
+   isolation: isolate;
+}
+
+.surface-card .glass-card__inner :where(h1, h2, h3, h4, h5, h6, p, ul, ol, li) {
+   mix-blend-mode: hard-light;
+}
+
+.surface-card .glass-card__inner a[href]:not(.rounded-full) {
+   mix-blend-mode: hard-light;
+}
+
+.surface-card .glass-card__inner a.btn-glass {
+   mix-blend-mode: normal;
+}
+
+/* Карточка проекта целиком — ссылка без hard-light, иначе «мажется» весь блок */
+.surface-card .glass-card__inner a.project-card-link {
+   mix-blend-mode: normal;
+}
+
+/* Светлый лес: после базового .surface-card — иначе перебиваются --text у карточек */
+html.light-forest .surface-card {
+   --text: #152a1e;
+   --text-muted: rgba(28, 52, 38, 0.82);
+   /* Секция задаёт светлые акценты для заголовков над канвой; внутри карточки — тёмные, читаемые на светлом стекле */
+   --accent: #238754;
+   --accent-hot: #7a5c18;
+   border-color: rgba(32, 88, 58, 0.14);
+   color: var(--text);
+   background: linear-gradient(
+      168deg,
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(248, 252, 249, 0.62) 45%,
+      rgba(232, 244, 236, 0.76) 100%
+   );
+   box-shadow: 0 16px 42px -22px rgba(18, 52, 34, 0.26);
+}
+
+html.light-forest .surface-card .glass-card__inner :where(h1, h2, h3, h4, h5, h6, p, ul, ol, li) {
+   mix-blend-mode: normal;
+}
+
+html.light-forest .surface-card .glass-card__inner a[href]:not(.rounded-full) {
+   mix-blend-mode: normal;
+}
+
+html.light-forest .surface-card .glass-card__inner h3.uppercase {
+   color: var(--accent-hot);
+}
+
+.surface-card::before {
+   content: '';
+   position: absolute;
+   inset: 0;
+   border-radius: inherit;
+   z-index: 0;
+   pointer-events: none;
+   background: transparent;
+   /* Минимальный blur — почти не матовое стекло; капля даёт основной эффект */
+   -webkit-backdrop-filter: blur(5px);
+   backdrop-filter: blur(5px);
+   -webkit-filter: url(#surface-droplet);
+   filter: url(#surface-droplet);
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .surface-card::before {
+      -webkit-filter: none;
+      filter: none;
+   }
+}
+
+/* Шапка: ссылки навигации */
+.nav-link {
+   border-radius: 0.375rem;
+   padding: 0.375rem 0.625rem;
+   font-size: 0.82rem;
+   font-weight: 500;
+   color: var(--text-muted);
+   text-decoration: none;
+   transition:
+      color 0.35s var(--ease-out-expo),
+      background-color 0.2s ease;
+}
+
+.nav-link:hover {
+   background: rgba(255, 255, 255, 0.06);
+   color: var(--text);
+}
+
+@media (min-width: 640px) {
+   .nav-link {
+      font-size: 0.9rem;
+   }
+}
+
+.text-gradient {
+   background: linear-gradient(118deg, #f2ffe8 0%, var(--accent) 38%, var(--accent-hot) 85%);
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+}
+
+/**
+ * Герой: тёплый жёлтый + обводка через text-shadow (без -webkit-text-stroke — меньше артефактов внутри букв).
+ */
+.portfolio-hero .type-hero-eyebrow {
+   color: #f2e8bc;
+   text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.62),
+      0 -1px 0 rgba(0, 0, 0, 0.62),
+      1px 0 0 rgba(0, 0, 0, 0.62),
+      -1px 0 0 rgba(0, 0, 0, 0.62),
+      1px 1px 1px rgba(0, 0, 0, 0.38),
+      -1px -1px 1px rgba(0, 0, 0, 0.38),
+      1px -1px 1px rgba(0, 0, 0, 0.38),
+      -1px 1px 1px rgba(0, 0, 0, 0.38);
+}
+
+.portfolio-hero .type-hero-lead {
+   color: rgba(247, 238, 206, 0.96);
+   text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.42),
+      0 -1px 0 rgba(0, 0, 0, 0.42),
+      1px 0 0 rgba(0, 0, 0, 0.42),
+      -1px 0 0 rgba(0, 0, 0, 0.42);
+}
+
+.portfolio-hero .type-hero-title > span:first-child {
+   color: #faf3d8;
+   text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.72),
+      0 -1px 0 rgba(0, 0, 0, 0.72),
+      1px 0 0 rgba(0, 0, 0, 0.72),
+      -1px 0 0 rgba(0, 0, 0, 0.72),
+      1px 1px 1px rgba(0, 0, 0, 0.48),
+      -1px -1px 1px rgba(0, 0, 0, 0.48),
+      1px -1px 1px rgba(0, 0, 0, 0.48),
+      -1px 1px 1px rgba(0, 0, 0, 0.48);
+}
+
+.portfolio-hero .text-gradient {
+   background: linear-gradient(
+      118deg,
+      #fff9ea 0%,
+      #f2e3b0 36%,
+      #dfc078 68%,
+      #c6a050 100%
+   );
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+   /* text-shadow ломает заливку при clip — кажется чёрным; обводка через drop-shadow по альфе глифа */
+   -webkit-text-fill-color: transparent;
+   filter:
+      drop-shadow(0 1px 0 rgba(0, 0, 0, 0.42))
+      drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.42))
+      drop-shadow(1px 0 0 rgba(0, 0, 0, 0.42))
+      drop-shadow(-1px 0 0 rgba(0, 0, 0, 0.42))
+      drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.28))
+      drop-shadow(-1px -1px 0 rgba(0, 0, 0, 0.28))
+      drop-shadow(1px -1px 0 rgba(0, 0, 0, 0.28))
+      drop-shadow(-1px 1px 0 rgba(0, 0, 0, 0.28));
+}
+
+/* Светлый лес: секционные заголовки над канвой */
+html.light-forest main > section:not(.portfolio-hero) .type-section-kicker {
+   color: #f0e4b4;
+   text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.58),
+      0 -1px 0 rgba(0, 0, 0, 0.58),
+      1px 0 0 rgba(0, 0, 0, 0.58),
+      -1px 0 0 rgba(0, 0, 0, 0.58),
+      1px 1px 1px rgba(0, 0, 0, 0.35),
+      -1px -1px 1px rgba(0, 0, 0, 0.35),
+      1px -1px 1px rgba(0, 0, 0, 0.35),
+      -1px 1px 1px rgba(0, 0, 0, 0.35);
+}
+
+html.light-forest main > section:not(.portfolio-hero) .type-section-heading {
+   color: #faf2d6;
+   text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.68),
+      0 -1px 0 rgba(0, 0, 0, 0.68),
+      1px 0 0 rgba(0, 0, 0, 0.68),
+      -1px 0 0 rgba(0, 0, 0, 0.68),
+      1px 1px 1px rgba(0, 0, 0, 0.42),
+      -1px -1px 1px rgba(0, 0, 0, 0.42),
+      1px -1px 1px rgba(0, 0, 0, 0.42),
+      -1px 1px 1px rgba(0, 0, 0, 0.42);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+   .text-gradient {
+      transition:
+         filter 0.45s var(--ease-out-expo),
+         opacity 0.35s ease;
+   }
+}
+
+.reveal {
+   opacity: 0;
+   transform: translateY(2rem);
+   transition:
+      opacity 0.9s var(--ease-out-expo),
+      transform 0.9s var(--ease-out-expo);
+}
+
+.reveal.is-visible {
+   opacity: 1;
+   transform: translateY(0);
+}
+
+.reveal-delay-1 {
+   transition-delay: 0.08s;
+}
+.reveal-delay-2 {
+   transition-delay: 0.16s;
+}
+.reveal-delay-3 {
+   transition-delay: 0.24s;
+}
+.reveal-delay-4 {
+   transition-delay: 0.32s;
+}
+
+/**
+ * Пара кнопок в герое: ярче градиент, свечение, вторичная — с акцентной обводкой.
+ */
+.hero-cta .btn-glass {
+   transition:
+      transform 0.3s var(--ease-out-expo),
+      box-shadow 0.45s var(--ease-out-expo),
+      border-color 0.45s var(--ease-out-expo),
+      color 0.45s var(--ease-out-expo),
+      background-color 0.45s var(--ease-out-expo);
+}
+
+.hero-cta .btn-glass--cta {
+   border-color: rgba(150, 240, 190, 0.5);
+   color: var(--text-on-accent);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 32px -6px rgba(70, 210, 135, 0.55),
+      0 14px 40px -12px rgba(25, 110, 70, 0.55);
+}
+
+.hero-cta .btn-glass--cta::before {
+   background: linear-gradient(
+      148deg,
+      rgba(38, 125, 82, 0.96) 0%,
+      rgba(115, 228, 168, 0.94) 44%,
+      rgba(58, 165, 112, 0.97) 100%
+   );
+}
+
+.hero-cta .btn-glass--cta:hover {
+   border-color: rgba(200, 255, 220, 0.65);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.38),
+      0 0 44px -4px rgba(110, 240, 175, 0.65),
+      0 18px 48px -10px rgba(35, 140, 92, 0.5);
+}
+
+.hero-cta .btn-glass--ghost {
+   border-color: rgba(125, 207, 154, 0.45);
+   color: var(--accent);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 28px -10px rgba(55, 175, 115, 0.4);
+}
+
+.hero-cta .btn-glass--ghost::before {
+   background: linear-gradient(
+      155deg,
+      rgba(16, 38, 28, 0.88) 0%,
+      rgba(32, 72, 52, 0.62) 48%,
+      rgba(18, 34, 26, 0.85) 100%
+   );
+}
+
+.hero-cta .btn-glass--ghost:hover {
+   border-color: rgba(165, 235, 195, 0.55);
+   color: var(--ghost-hover-fg);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 36px -8px rgba(85, 200, 140, 0.48);
+}
+
+.hero-cta .btn-glass--ghost:hover::before {
+   background: linear-gradient(
+      155deg,
+      rgba(26, 58, 42, 0.9) 0%,
+      rgba(48, 105, 75, 0.58) 50%,
+      rgba(24, 44, 34, 0.88) 100%
+   );
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .hero-cta .btn-glass {
+      transition: none;
+   }
+
+   .hero-cta .btn-glass:hover {
+      transform: none;
+   }
+}
+
+/* Узкий экран: меньше ореола — не «режет» края и не перегружает */
+@media (max-width: 639px) {
+   .hero-cta .btn-glass--cta {
+      box-shadow:
+         inset 0 1px 0 rgba(255, 255, 255, 0.26),
+         0 0 22px -8px rgba(70, 210, 135, 0.45),
+         0 10px 28px -14px rgba(25, 110, 70, 0.48);
+   }
+
+   .hero-cta .btn-glass--cta:hover {
+      box-shadow:
+         inset 0 1px 0 rgba(255, 255, 255, 0.32),
+         0 0 28px -6px rgba(110, 240, 175, 0.5),
+         0 12px 32px -12px rgba(35, 140, 92, 0.45);
+   }
+
+   .hero-cta .btn-glass--ghost {
+      box-shadow:
+         inset 0 1px 0 rgba(255, 255, 255, 0.12),
+         0 0 18px -10px rgba(55, 175, 115, 0.32);
+   }
+
+   .hero-cta .btn-glass--ghost:hover {
+      box-shadow:
+         inset 0 1px 0 rgba(255, 255, 255, 0.16),
+         0 0 24px -8px rgba(85, 200, 140, 0.38);
+   }
+}
+
+/**
+ * Стекло кнопок: backdrop + градиент на ::before (без SVG displacement).
+ */
+.btn-glass {
+   position: relative;
+   overflow: hidden;
+   background: transparent;
+   border: 1px solid var(--glass-border);
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 10px 28px -18px rgba(0, 0, 0, 0.38);
+}
+
+.btn-glass::before {
+   content: '';
+   position: absolute;
+   inset: 0;
+   border-radius: inherit;
+   z-index: -1;
+   pointer-events: none;
+   background: linear-gradient(
+      158deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0.06) 48%,
+      rgba(185, 235, 205, 0.12) 100%
+   );
+   -webkit-backdrop-filter: blur(18px) saturate(1.45);
+   backdrop-filter: blur(18px) saturate(1.45);
+}
+
+.btn-glass--cta {
+   border-color: rgba(255, 255, 255, 0.24);
+   color: var(--text-on-accent);
+}
+
+.btn-glass--cta::before {
+   background: linear-gradient(
+      155deg,
+      rgba(74, 143, 104, 0.62) 0%,
+      rgba(125, 207, 154, 0.68) 52%,
+      rgba(88, 175, 118, 0.64) 100%
+   );
+}
+
+.btn-glass--ghost::before {
+   background: linear-gradient(155deg, rgba(12, 22, 16, 0.72) 0%, rgba(18, 28, 22, 0.58) 100%);
+}
+
+.btn-glass--nav::before {
+   background: linear-gradient(
+      135deg,
+      rgba(42, 72, 54, 0.65) 0%,
+      rgba(125, 207, 154, 0.35) 55%,
+      rgba(255, 255, 255, 0.1) 100%
+   );
+}
+
+.btn-glass--nav:hover::before {
+   background: linear-gradient(135deg, rgba(125, 207, 154, 0.38) 0%, rgba(255, 255, 255, 0.14) 100%);
+}
+
+html.light-forest .btn-glass {
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.52),
+      0 10px 28px -18px rgba(22, 52, 36, 0.16);
+}
+
+html.light-forest .btn-glass--nav::before {
+   background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.58) 0%,
+      rgba(226, 242, 232, 0.42) 55%,
+      rgba(198, 228, 208, 0.32) 100%
+   );
+}
+
+html.light-forest .btn-glass--nav:hover::before {
+   background: linear-gradient(
+      135deg,
+      rgba(240, 250, 244, 0.78) 0%,
+      rgba(214, 236, 224, 0.52) 100%
+   );
+}
+
+/* Шапка: светлое стекло — подпись и иконка темы не цветом «воздуха» от hero-токенов */
+html.light-forest header .btn-glass--nav {
+   color: #134228;
+}
+
+html.light-forest header .btn-glass--nav:hover {
+   color: #0c2e1b;
+}
+
+.btn-glass--ghost:hover::before {
+   background: linear-gradient(
+      155deg,
+      rgba(22, 34, 28, 0.82) 0%,
+      rgba(255, 255, 255, 0.12) 48%,
+      rgba(14, 24, 18, 0.78) 100%
+   );
+}
+
+.btn-glass--soft::before {
+   -webkit-backdrop-filter: blur(12px) saturate(1.3);
+   backdrop-filter: blur(12px) saturate(1.3);
+}
+
+.btn-glass--soft {
+   box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 6px 18px -14px rgba(0, 0, 0, 0.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+   .btn-glass {
+      transition: none;
+   }
+
+   .btn-glass::before {
+      -webkit-backdrop-filter: blur(10px) saturate(1.2);
+      backdrop-filter: blur(10px) saturate(1.2);
+   }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+   .btn-glass::before {
+      display: none;
+   }
+
+   .btn-glass {
+      background: rgba(14, 22, 17, 0.92);
+   }
+
+   .btn-glass--cta {
+      background: linear-gradient(155deg, rgba(55, 110, 78, 0.95) 0%, rgba(85, 165, 118, 0.95) 100%);
+   }
+
+   .btn-glass--ghost {
+      background: rgba(18, 26, 20, 0.88);
+   }
+
+   .btn-glass--nav {
+      background: rgba(24, 42, 30, 0.9);
+   }
+}
+
+html.light-forest ::selection {
+   background: rgba(45, 135, 88, 0.28);
+   color: #081208;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+   html.light-forest .btn-glass {
+      background: rgba(248, 252, 250, 0.94);
+   }
+
+   html.light-forest .btn-glass--ghost {
+      background: rgba(236, 244, 238, 0.94);
+   }
+
+   html.light-forest .btn-glass--nav {
+      background: rgba(236, 246, 240, 0.94);
+   }
+}
