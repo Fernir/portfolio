@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { useLandingLocale } from '../composables/useLandingLocale';
+import { joinPublicAsset } from '~/utils/publicAsset';
 
 /** Луп `public/audio/forest/ambient.mp3`; автозапуск зависит от политики браузера. */
-const AUDIO_SRC = '/audio/forest/ambient.mp3';
+const AUDIO_SRC = joinPublicAsset(
+   useRuntimeConfig().app.baseURL || '/',
+   '/audio/forest/ambient.mp3',
+);
 const STORAGE_KEY = 'port-forest-ambient';
 const VOLUME = 0.38;
 
@@ -216,8 +220,8 @@ const titleAttr = computed(() => {
    />
    <button
       type="button"
-      class="forest-ambient-btn btn-glass btn-glass--nav relative z-nav-lang inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:opacity-90 sm:h-9 sm:w-9"
-      :class="{ 'forest-ambient-btn--on': enabled && !loadFailed, 'opacity-55': loadFailed }"
+      class="forest-ambient-btn relative z-50 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-ink hover:opacity-90 sm:h-9 sm:w-9"
+      :class="{ 'opacity-55': loadFailed }"
       :aria-pressed="enabled && !loadFailed"
       :aria-label="
          loadFailed ? messages.nav.forestAmbientUnavailable : enabled ? messages.nav.forestAmbientPause : messages.nav.forestAmbientPlay
@@ -283,9 +287,5 @@ const titleAttr = computed(() => {
       width: 1.05rem;
       height: 1.05rem;
    }
-}
-
-.forest-ambient-btn--on {
-   color: var(--accent, #7dcf9a);
 }
 </style>

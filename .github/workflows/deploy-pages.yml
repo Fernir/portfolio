@@ -1,0 +1,52 @@
+# Сборка Nuxt static → push в ветку `gh-pages`.
+#
+# В GitHub: Settings → Pages → Build and deployment → Source:
+#   «Deploy from a branch» («Развернуть из ветки») → Branch: gh-pages → Folder: / (root).
+#
+# Тогда не нужен пункт Source: GitHub Actions (его может не быть в интерфейсе).
+#
+# Для сайта в корне user.github.io задайте NUXT_APP_BASE_URL: / в шаге generate ниже.
+
+name: Deploy to GitHub Pages
+
+on:
+   push:
+      branches: [main]
+
+permissions:
+   contents: write
+
+concurrency:
+   group: pages
+   cancel-in-progress: true
+
+jobs:
+   build-deploy:
+      runs-on: ubuntu-latest
+      steps:
+         - uses: actions/checkout@v4
+
+         - uses: pnpm/action-setup@v4
+            with:
+               version: 9
+
+         - uses: actions/setup-node@v4
+            with:
+               node-version: 22
+               cache: pnpm
+
+         - run: pnpm install --frozen-lockfile
+
+         - name: Static generate (Nuxt)
+            run: pnpm generate
+            env:
+               NUXT_APP_BASE_URL: /${{ github.event.repository.name }}/
+
+         - name: Skip Jekyll on Pages
+            run: touch .output/public/.nojekyll
+
+         - name: Push site to gh-pages branch
+            uses: peaceiris/actions-gh-pages@v4
+            with:
+               github_token: ${{ secrets.GITHUB_TOKEN }}
+               publish_dir: .output/public

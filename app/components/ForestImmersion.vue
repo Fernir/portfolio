@@ -3,10 +3,37 @@
 </template>
 
 <script setup lang="ts">
+import { joinPublicAsset } from '~/utils/publicAsset';
+
 /** Интерактивный фон: параллакс, объёмный свет, частицы. */
-const props = withDefaults(defineProps<{ lightForest?: boolean }>(), { lightForest: false });
+
+/** Меньше пикселей и кадров — почти без потери «леса», заметно меньше нагрева GPU. */
+const FOREST_DPR_MAX = 1.45;
+const FOREST_DPR_MAX_LOW = 1.15;
+const FOREST_MIN_FRAME_MS = 1000 / 46;
+const FOREST_DUST_NORMAL = 1750;
+const FOREST_DUST_LOW = 880;
+
+function forestGpuLowTier(reduceMotion: boolean): boolean {
+   if (reduceMotion) return true;
+   try {
+      if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-data: reduce)').matches) return true;
+   } catch {
+      /* ignore */
+   }
+   const hc = typeof navigator !== 'undefined' ? navigator.hardwareConcurrency ?? 8 : 8;
+   const dm = typeof navigator !== 'undefined' && 'deviceMemory' in navigator ? (navigator as Navigator & { deviceMemory?: number }).deviceMemory : undefined;
+   if (hc <= 4) return true;
+   if (dm != null && dm <= 4) return true;
+   return false;
+}
 
 const host = ref<HTMLElement | null>(null);
+const base = useRuntimeConfig().app.baseURL || '/';
+
+const props = withDefaults(defineProps<{ showForestImage?: boolean }>(), {
+   showForestImage: false,
+});
 
 const FOREST_VS = /* glsl */ `
 varying vec2 vUv;
@@ -288,6 +315,7 @@ onMounted(async () => {
    const THREE = await import('three');
 
    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+   const lowTier = forestGpuLowTier(reduceMotion);
 
    let width = root.clientWidth || window.innerWidth;
    let height = root.clientHeight || window.innerHeight;
@@ -302,10 +330,11 @@ onMounted(async () => {
 
    const renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
+      antialias: false,
+      powerPreference: 'default',
    });
-   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+   const dprMax = lowTier ? FOREST_DPR_MAX_LOW : FOREST_DPR_MAX;
+   renderer.setPixelRatio(Math.min(window.devicePixelRatio, dprMax));
    renderer.setSize(width, height);
    renderer.setClearColor(0x000000, 0);
    renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -329,76 +358,81 @@ onMounted(async () => {
       return [w * pad, h * pad];
    }
 
-   const loader = new THREE.TextureLoader();
-   loader.setCrossOrigin('anonymous');
-
-   async function loadForestTexture(url: string): Promise<import('three').Texture | undefined> {
-      try {
-         const tex = await new Promise<import('three').Texture>((resolve, reject) => {
-            loader.load(url, resolve, undefined, reject);
-         });
-         tex.colorSpace = THREE.SRGBColorSpace;
-         tex.minFilter = THREE.LinearFilter;
-         tex.magFilter = THREE.LinearFilter;
-         return tex;
-      } catch {
-         return undefined;
-      }
-   }
-
-   const forestTexDark = await loadForestTexture('/chahta-forest.jpg');
-   const forestTexDay = (await loadForestTexture('/forest-day.png')) ?? forestTexDark;
-
-   function syncForestTextureBinding() {
-      if (!forestUniforms) return;
-      const tex = props.lightForest ? (forestTexDay ?? forestTexDark) : (forestTexDark ?? forestTexDay);
-      if (!tex) return;
-      if (forestUniforms.uMap.value !== tex) {
-         forestUniforms.uMap.value = tex;
-         const im = tex.image as { width?: number; height?: number } | undefined;
-         const iw = im?.width ?? 2048;
-         const ih = im?.height ?? 2048;
-         forestUniforms.uTexel.value.set(1 / iw, 1 / ih);
-      }
-   }
-
-   const forestGeo = new THREE.PlaneGeometry(1, 1);
-
-   type ForestUniforms = {
-      uMap: { value: import('three').Texture };
-      uMouse: { value: import('three').Vector2 };
-      uTexel: { value: import('three').Vector2 };
-      uLight: { value: number };
-   };
-   let forestUniforms: ForestUniforms | undefined;
-
-   const initialForestTex = forestTexDark ?? forestTexDay;
-   const forestMat = initialForestTex
-      ? (() => {
-           const texDims = initialForestTex.image as { width: number; height: number } | undefined;
-           const iw = texDims?.width ?? 2048;
-           const ih = texDims?.height ?? 2048;
-           forestUniforms = {
-              uMap: { value: initialForestTex },
-              uMouse: { value: new THREE.Vector2(0, 0) },
-              uTexel: { value: new THREE.Vector2(1 / iw, 1 / ih) },
-              uLight: { value: props.lightForest ? 1 : 0 },
-           };
-           syncForestTextureBinding();
-           return new THREE.ShaderMaterial({
-              uniforms: forestUniforms,
-              vertexShader: FOREST_VS,
-              fragmentShader: FOREST_FS,
-           });
-        })()
-      : new THREE.MeshBasicMaterial({ color: 0x0a1510 });
-   const forest = new THREE.Mesh(forestGeo, forestMat);
-   forest.position.z = 0;
    const [sw, sh] = planeScale();
-   forest.scale.set(sw, sh, 1);
-   world.add(forest);
 
-   /* PNG-оверлей убран: сгенерированная текстура давала артефакты («кубики»). Глубину дают шейдер лучей + пыль. */
+   let forest: import('three').Mesh | null = null;
+   let forestGeo: import('three').PlaneGeometry | null = null;
+   let forestMat: import('three').Material | null = null;
+   let forestTexDark: import('three').Texture | undefined;
+
+   if (props.showForestImage) {
+      const loader = new THREE.TextureLoader();
+      loader.setCrossOrigin('anonymous');
+
+      async function loadForestTexture(url: string): Promise<import('three').Texture | undefined> {
+         try {
+            const tex = await new Promise<import('three').Texture>((resolve, reject) => {
+               loader.load(url, resolve, undefined, reject);
+            });
+            tex.colorSpace = THREE.SRGBColorSpace;
+            tex.minFilter = THREE.LinearFilter;
+            tex.magFilter = THREE.LinearFilter;
+            return tex;
+         } catch {
+            return undefined;
+         }
+      }
+
+      forestTexDark = await loadForestTexture(joinPublicAsset(base, '/chahta-forest.jpg'));
+
+      function syncForestTextureBinding() {
+         if (!forestUniforms) return;
+         const tex = forestTexDark;
+         if (!tex) return;
+         if (forestUniforms.uMap.value !== tex) {
+            forestUniforms.uMap.value = tex;
+            const im = tex.image as { width?: number; height?: number } | undefined;
+            const iw = im?.width ?? 2048;
+            const ih = im?.height ?? 2048;
+            forestUniforms.uTexel.value.set(1 / iw, 1 / ih);
+         }
+      }
+
+      forestGeo = new THREE.PlaneGeometry(1, 1);
+
+      type ForestUniforms = {
+         uMap: { value: import('three').Texture };
+         uMouse: { value: import('three').Vector2 };
+         uTexel: { value: import('three').Vector2 };
+         uLight: { value: number };
+      };
+      let forestUniforms: ForestUniforms | undefined;
+
+      const initialForestTex = forestTexDark;
+      forestMat = initialForestTex
+         ? (() => {
+              const texDims = initialForestTex.image as { width: number; height: number } | undefined;
+              const iw = texDims?.width ?? 2048;
+              const ih = texDims?.height ?? 2048;
+              forestUniforms = {
+                 uMap: { value: initialForestTex },
+                 uMouse: { value: new THREE.Vector2(0, 0) },
+                 uTexel: { value: new THREE.Vector2(1 / iw, 1 / ih) },
+                 uLight: { value: 0 },
+              };
+              syncForestTextureBinding();
+              return new THREE.ShaderMaterial({
+                 uniforms: forestUniforms,
+                 vertexShader: FOREST_VS,
+                 fragmentShader: FOREST_FS,
+              });
+           })()
+         : new THREE.MeshBasicMaterial({ color: 0x0a1510 });
+      forest = new THREE.Mesh(forestGeo, forestMat);
+      forest.position.z = 0;
+      forest.scale.set(sw, sh, 1);
+      world.add(forest);
+   }
 
    function makeRayMaterial(wide: number) {
       return new THREE.ShaderMaterial({
@@ -406,7 +440,7 @@ onMounted(async () => {
             uTime: { value: 0 },
             uMouse: { value: new THREE.Vector2(0, 0) },
             uWide: { value: wide },
-            uLight: { value: props.lightForest ? 1 : 0 },
+            uLight: { value: 0 },
          },
          vertexShader: RAY_VS,
          fragmentShader: RAY_FS,
@@ -432,8 +466,10 @@ onMounted(async () => {
    raysSoft.scale.set(sw * 1.08, sh * 1.08, 1);
    raysSoft.renderOrder = 2;
    world.add(raysSoft);
+   /* Второй полноэкранный проход лучей — дорогой; на слабом железе хватает одного слоя. */
+   raysSoft.visible = !lowTier;
 
-   const dustCount = reduceMotion ? 400 : 2200;
+   const dustCount = reduceMotion ? 400 : lowTier ? FOREST_DUST_LOW : FOREST_DUST_NORMAL;
    const positions = new Float32Array(dustCount * 3);
    const phases = new Float32Array(dustCount);
    for (let i = 0; i < dustCount; i++) {
@@ -460,7 +496,7 @@ onMounted(async () => {
       uBeam: { value: new THREE.Vector2(0.48, -0.88).normalize() },
       uPlane: { value: new THREE.Vector2(sw, sh) },
       uReduce: { value: reduceMotion ? 1 : 0 },
-      uLight: { value: props.lightForest ? 1 : 0 },
+      uLight: { value: 0 },
    };
    const dustShaderMat = new THREE.ShaderMaterial({
       uniforms: dustUniforms,
@@ -475,14 +511,6 @@ onMounted(async () => {
    dust.renderOrder = 3;
    world.add(dust);
 
-   watch(
-      () => props.lightForest,
-      () => {
-         syncForestTextureBinding();
-      },
-      { flush: 'post' },
-   );
-
    const mouseTarget = new THREE.Vector2(0, 0);
    const mouseCur = new THREE.Vector2(0, 0);
 
@@ -496,8 +524,28 @@ onMounted(async () => {
    window.addEventListener('pointermove', onPointer, { passive: true });
 
    let frame = 0;
-   const tick = () => {
+   let lastDrawMs = 0;
+
+   function scheduleFrame() {
       frame = requestAnimationFrame(tick);
+   }
+
+   function onForestVisibility() {
+      if (document.hidden) {
+         cancelAnimationFrame(frame);
+         frame = 0;
+      } else {
+         lastDrawMs = 0;
+         if (!frame) scheduleFrame();
+      }
+   }
+   document.addEventListener('visibilitychange', onForestVisibility);
+
+   const tick = (time: number) => {
+      scheduleFrame();
+      if (document.hidden) return;
+      if (time - lastDrawMs < FOREST_MIN_FRAME_MS) return;
+      lastDrawMs = time;
       timer.update();
       const t = reduceMotion ? 0 : timer.getElapsed();
       rayMatSharp.uniforms.uTime!.value = t;
@@ -512,7 +560,7 @@ onMounted(async () => {
       dustUniforms.uMouse.value.set(mx, my);
       syncLightBeam(mx, my, dustUniforms.uBeam.value);
 
-      const uLightVal = props.lightForest ? 1 : 0;
+      const uLightVal = 0;
       if (forestMat instanceof THREE.ShaderMaterial && forestMat.uniforms.uLight) {
          forestMat.uniforms.uLight.value = uLightVal;
       }
@@ -530,7 +578,7 @@ onMounted(async () => {
 
       renderer.render(scene, camera);
    };
-   tick();
+   scheduleFrame();
 
    function resize() {
       const el = host.value;
@@ -543,7 +591,7 @@ onMounted(async () => {
       renderer.setSize(width, height);
 
       const [nw, nh] = planeScale();
-      forest.scale.set(nw, nh, 1);
+      if (forest) forest.scale.set(nw, nh, 1);
       raysSharp.scale.set(nw * 1.035, nh * 1.035, 1);
       raysSoft.scale.set(nw * 1.08, nh * 1.08, 1);
       dustUniforms.uPlane.value.set(nw, nh);
@@ -555,15 +603,15 @@ onMounted(async () => {
 
    disposeFn = () => {
       cancelAnimationFrame(frame);
+      frame = 0;
+      document.removeEventListener('visibilitychange', onForestVisibility);
       timer.dispose();
       window.removeEventListener('pointermove', onPointer);
-      window.removeEventListener('resize', resize);
       ro.disconnect();
       renderer.dispose();
-      forestGeo.dispose();
-      forestMat.dispose();
+      forestGeo?.dispose();
+      forestMat?.dispose();
       forestTexDark?.dispose();
-      if (forestTexDay && forestTexDay !== forestTexDark) forestTexDay.dispose();
       rayGeo.dispose();
       rayMatSharp.dispose();
       rayMatSoft.dispose();

@@ -3,6 +3,13 @@ export default defineNuxtConfig({
    compatibilityDate: '2025-07-15',
    devtools: { enabled: process.env.NODE_ENV !== 'production' },
    modules: ['@nuxt/eslint', '@nuxtjs/tailwindcss'],
+   typescript: {
+      tsConfig: {
+         compilerOptions: {
+            types: ['node'],
+         },
+      },
+   },
    /* Unbounded с кириллицей — локальные woff2, не зависит от Google и блокировок */
    css: [
       '@fontsource/unbounded/500.css',
@@ -12,6 +19,8 @@ export default defineNuxtConfig({
       '~/assets/css/main.css',
    ],
    app: {
+      /** GitHub project pages: `https://user.github.io/repo/` → set `NUXT_APP_BASE_URL=/repo/` in CI */
+      baseURL: process.env.NUXT_APP_BASE_URL || '/',
       head: {
          htmlAttrs: { lang: 'en' },
          meta: [{ name: 'format-detection', content: 'telephone=no' }],

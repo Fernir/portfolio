@@ -3,19 +3,23 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "gen:sprites": "node scripts/gen-portfolio-tiles.mjs",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "typecheck": "nuxt typecheck",
+    "extract:q2-textures": "node scripts/extract-q2-pak-wals.mjs",
+    "sync:q2-bsp-wals": "node scripts/sync-q2-bsp-missing-wals.mjs",
+    "q2:textures:prune": "node scripts/prune-q2-textures-for-bsps.mjs",
+    "q2:textures:flatten": "node scripts/flatten-q2-textures.mjs",
+    "q2:textures:pack": "node scripts/pack-q2-textures-pak.mjs"
   },
   "dependencies": {
     "@fontsource/unbounded": "^5.2.8",
     "nuxt": "^4.4.4",
-    "pixi.js": "^8.11.0",
     "three": "^0.184.0",
     "vue": "^3.5.34",
     "vue-router": "^5.0.6"
@@ -23,10 +27,12 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/node": "^25.7.0",
     "@types/three": "^0.184.0",
+    "@vue/language-core": "^3.2.9",
     "eslint": "^10.3.0",
-    "sharp": "^0.34.5",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.2.9"
   },
   "pnpm": {
     "overrides": {

@@ -147,9 +147,3 @@ const clipTri = `lf-gb-tri-${idFrag}`;
    shape-rendering: geometricPrecision;
 }
 </style>
-
-<style>
-html.light-forest .locale-flag {
-   box-shadow: inset 0 0 0 1px rgba(28, 52, 38, 0.22);
-}
-</style>
